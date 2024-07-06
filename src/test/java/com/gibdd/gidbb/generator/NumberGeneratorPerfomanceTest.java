@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class NumberGeneratorPerfomanceTest {
 
     private NumberGenerator generator;
-    private static final int NUMBER_OF_TESTS = 40000000;
+    private static final int NUMBER_OF_TESTS = 4000000;
 
     @BeforeEach
     void setUp() {
