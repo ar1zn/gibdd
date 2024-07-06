@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class NumberGeneratorPerfomanceTest {
 
     private NumberGenerator generator;
-    private static final int NUMBER_OF_TESTS = 4000000;
+    private static final int NUMBER_OF_TESTS = 40000000;
 
     @BeforeEach
     void setUp() {
@@ -26,7 +26,7 @@ class NumberGeneratorPerfomanceTest {
             generator.getNext();
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime); // Convert to milliseconds
+        long duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
         System.out.println("getNext() execution time: " + duration + " ms");
 
         assertTrue(duration < 5000);
@@ -46,7 +46,7 @@ class NumberGeneratorPerfomanceTest {
             }
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime); // Convert to milliseconds
+        long duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
         System.out.println("generateRandom() execution time: " + duration + " ms");
 
         assertTrue(duration < 5000);
