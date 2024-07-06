@@ -1,6 +1,7 @@
 package com.gibdd.gidbb.generator;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NumberGeneratorDefault implements NumberGenerator {
     public static String regex = "[АЕТОРНУКХСВМ]\\d{3}[АЕТОРНУКХСВМ]{2}116 RUS";
@@ -9,6 +10,9 @@ public class NumberGeneratorDefault implements NumberGenerator {
     private final Set<String> generatedNums = new HashSet<>();
     private final Set<String> savedNums = new HashSet<>();
     private String lastGeneratedNum;
+    private static final int MAX_GENERATION_ATTEMPTS = 17424000;
+    private static final Random random = new Random();
+
 
     @Override
     public String getNext() {
@@ -24,27 +28,30 @@ public class NumberGeneratorDefault implements NumberGenerator {
     @Override
     public String generateRandom() {
         String newNum;
-        do {
+        for (int attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt++) {
             newNum = generateRandomCharacter(LETTERS) +
-                    new Random().nextInt(10) +
-                    new Random().nextInt(10) +
-                    new Random().nextInt(10) +
+                    random.nextInt(10) +
+                    random.nextInt(10) +
+                    random.nextInt(10) +
                     generateRandomCharacter(LETTERS) +
                     generateRandomCharacter(LETTERS) +
                     REGION;
-        } while (generatedNums.contains(newNum));
-        generatedNums.add(newNum);
-        lastGeneratedNum = newNum;
-        return newNum;
+            if (!generatedNums.contains(newNum)) {
+                generatedNums.add(newNum);
+                lastGeneratedNum = newNum;
+                return newNum;
+            }
+        }
+        throw new RuntimeException("Не удалось сгенерировать уникальный номер после " + MAX_GENERATION_ATTEMPTS + " попыток");
     }
 
     private String generateRandomCharacter(char[] characters) {
-        Random random = new Random();
         return String.valueOf(characters[random.nextInt(characters.length)]);
     }
 
     private String incrementNumber(String number) {
         char[] chars = number.toCharArray();
+        int index = chars.length - 1;
         int num = Integer.parseInt(number.substring(1, 4));
 
         for (int i = chars.length - 1; i >= 0; i--) {
@@ -57,10 +64,20 @@ public class NumberGeneratorDefault implements NumberGenerator {
                     break;
                 }
             } else if (Character.isLetter(currentChar)) {
-                chars[i] = nextLetter(currentChar);
-                if (i == 0 || !Character.isDigit(chars[i - 1])) {
-                    break;
+                char nextLetter = nextLetter(currentChar);
+                chars[index] = nextLetter;
+                if (generatedNums.contains(new String(chars).concat(REGION))) {
+                    num++;
+                    if (num > 999) {
+                        break;
+                    }
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(number.charAt(0));
+                    sb.append(num);
+                    sb.append(number.substring(4, number.length()));
+                    return sb.toString();
                 }
+                break;
             }
         }
 
