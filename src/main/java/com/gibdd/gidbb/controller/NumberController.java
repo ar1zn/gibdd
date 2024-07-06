@@ -17,7 +17,7 @@ public class NumberController {
 
     @GetMapping("/next")
     public String getNext(){
-     return numberService.generateNextNumber();
+     return numberService.getNextNumber();
     }
 
     @GetMapping("/random")

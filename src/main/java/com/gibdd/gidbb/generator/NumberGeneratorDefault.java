@@ -4,38 +4,37 @@ import java.util.*;
 
 public class NumberGeneratorDefault implements NumberGenerator {
     public static String regex = "[АЕТОРНУКХСВМ]\\d{3}[АЕТОРНУКХСВМ]{2}116 RUS";
-    private static final char[] letters = {'А', 'Е', 'Т', 'О', 'Р', 'Н', 'У', 'К', 'Х', 'С', 'В', 'М'};
-    private final String region = "116 RUS";
-    private Set<String> generatedNums = new LinkedHashSet<>();
-    private Set<String> savedNums = new LinkedHashSet<>();
+    private static final char[] LETTERS = {'А', 'Е', 'Т', 'О', 'Р', 'Н', 'У', 'К', 'Х', 'С', 'В', 'М'};
+    private static final String REGION = "116 RUS";
+    private final Set<String> generatedNums = new HashSet<>();
+    private final Set<String> savedNums = new HashSet<>();
+    private String lastGeneratedNum;
 
     @Override
     public String getNext() {
-        if (generatedNums.size() == 0) {
-            generatedNums.add(new NumberGeneratorDefault().generateRandom());
+        if (generatedNums.isEmpty()) {
+            lastGeneratedNum = generateRandom();
+        } else {
+            lastGeneratedNum = incrementNumber(lastGeneratedNum.substring(0, 6)) + REGION;
         }
-        List<String> list = new ArrayList<>(generatedNums);
-        String prevNum = list.get(list.size() - 1);
-        String nextNumber = incrementNumber(prevNum.substring(0, 6)) +
-                prevNum.substring(6);
-
-        generatedNums.add(nextNumber);
-        return nextNumber;
+        generatedNums.add(lastGeneratedNum);
+        return lastGeneratedNum;
     }
 
     @Override
     public String generateRandom() {
         String newNum;
         do {
-            newNum = generateRandomCharacter(letters) +
-                    (new Random().nextInt(10)) +
-                    (new Random().nextInt(10)) +
-                    (new Random().nextInt(10)) +
-                    generateRandomCharacter(letters) +
-                    generateRandomCharacter(letters) +
-                    region;
+            newNum = generateRandomCharacter(LETTERS) +
+                    new Random().nextInt(10) +
+                    new Random().nextInt(10) +
+                    new Random().nextInt(10) +
+                    generateRandomCharacter(LETTERS) +
+                    generateRandomCharacter(LETTERS) +
+                    REGION;
         } while (generatedNums.contains(newNum));
         generatedNums.add(newNum);
+        lastGeneratedNum = newNum;
         return newNum;
     }
 
@@ -46,61 +45,48 @@ public class NumberGeneratorDefault implements NumberGenerator {
 
     private String incrementNumber(String number) {
         char[] chars = number.toCharArray();
-        int index = chars.length - 1;
         int num = Integer.parseInt(number.substring(1, 4));
 
-        while (index >= 0) {
-            char currentChar = chars[index];
-
+        for (int i = chars.length - 1; i >= 0; i--) {
+            char currentChar = chars[i];
             if (Character.isDigit(currentChar)) {
                 if (currentChar == '9') {
-                    chars[index] = '0';
-                    index--;
+                    chars[i] = '0';
                 } else {
-                    chars[index]++;
+                    chars[i]++;
                     break;
                 }
             } else if (Character.isLetter(currentChar)) {
-                char nextLetter = nextLetter(currentChar);
-                chars[index] = nextLetter;
-                if (generatedNums.contains(new String(chars).concat(region))) {
-                    num++;
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(number.charAt(0));
-                    sb.append(num);
-                    sb.append(number.substring(4, number.length()));
-                    return sb.toString();
+                chars[i] = nextLetter(currentChar);
+                if (i == 0 || !Character.isDigit(chars[i - 1])) {
+                    break;
                 }
-                break;
             }
         }
 
-        return String.valueOf(chars);
+        return new String(chars);
     }
 
     private char nextLetter(char c) {
-        for (int i = 0; i < letters.length - 1; i++) {
-            if (letters[i] == c) {
-                return letters[i + 1];
+        for (int i = 0; i < LETTERS.length - 1; i++) {
+            if (LETTERS[i] == c) {
+                return LETTERS[i + 1];
             }
         }
-
-        return letters[0];
+        return LETTERS[0];
     }
 
     public String getLastNum() {
-        if (generatedNums.size() == 0) {
+        if (lastGeneratedNum == null) {
+            throw new RuntimeException("Нечего сохранять");
+        }
+        if (savedNums.contains(lastGeneratedNum)) {
             throw new RuntimeException("Такой номер уже есть");
         }
-        List<String> list = new ArrayList<>(generatedNums);
-        String lastNum = list.get(list.size() - 1);
-        if (savedNums.contains(lastNum)) {
-            throw new RuntimeException("Такой номер уже есть");
-        }
-        if (!lastNum.matches(regex)) {
+        if (!lastGeneratedNum.matches(regex)) {
             throw new IllegalArgumentException("Неверный формат данных");
         }
-        savedNums.add(lastNum);
-        return new String(lastNum);
+        savedNums.add(lastGeneratedNum);
+        return lastGeneratedNum;
     }
 }

@@ -23,7 +23,7 @@ public class NumberService {
         return numberGenerator.generateRandom();
     }
 
-    public String generateNextNumber() {
+    public String getNextNumber() {
         return numberGenerator.getNext();
     }
 
