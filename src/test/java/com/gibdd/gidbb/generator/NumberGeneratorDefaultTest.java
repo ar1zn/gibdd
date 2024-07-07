@@ -14,6 +14,7 @@ public class NumberGeneratorDefaultTest {
     @BeforeEach
     public void setUp() {
         numberGenerator = new NumberGeneratorDefault();
+        numberGenerator.init();
     }
 
     @DisplayName("Проверка одинаковы ли рандомные числа")
